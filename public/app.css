@@ -1,0 +1,104 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.container {
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.log-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+  overflow-y: auto;
+  height: 0;
+}
+
+.log {
+  flex-grow: 0;
+  height: fit-content;
+  position: relative;
+  max-width: 80%;
+}
+
+.log-request {
+  background-color: var(--pico-primary-background);
+  border-top-right-radius: 0;
+  margin-right: 16px;
+  margin-left: auto;
+}
+
+.log-request::selection {
+  background: #d92662;
+  color: white;
+}
+
+.log-request::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  right: -16px;
+  width: 0;
+  height: 0;
+  border-width: 8px;
+  border-style: solid;
+  border-color: var(--pico-primary-background) transparent transparent
+    var(--pico-primary-background);
+}
+
+.log-response {
+  border-top-left-radius: 0;
+  margin-left: 16px;
+}
+
+.log-response::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: -16px;
+  width: 0;
+  height: 0;
+  border-width: 8px;
+  border-style: solid;
+  border-color: var(--pico-card-background-color)
+    var(--pico-card-background-color) transparent transparent;
+}
+
+.input-wrapper {
+  position: relative;
+  margin-bottom: var(--pico-spacing);
+}
+
+.input {
+  resize: none;
+  field-sizing: content;
+  padding-right: 56px;
+  margin-bottom: 0;
+}
+
+.btn-submit {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+}

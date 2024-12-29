@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YTTA</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body>
+    <main class="container">
+      <div class="log-wrapper"></div>
+      <div class="input-wrapper">
+        <textarea class="input" placeholder="Type some text..."></textarea>
+        <button class="btn-submit">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            fill="currentColor"
+            viewBox="0 0 256 256"
+          >
+            <path
+              d="M231.87,114l-168-95.89A16,16,0,0,0,40.92,37.34L71.55,128,40.92,218.67A16,16,0,0,0,56,240a16.15,16.15,0,0,0,7.93-2.1l167.92-96.05a16,16,0,0,0,.05-27.89ZM56,224a.56.56,0,0,0,0-.12L85.74,136H144a8,8,0,0,0,0-16H85.74L56.06,32.16A.46.46,0,0,0,56,32l168,95.83Z"
+            ></path>
+          </svg>
+        </button>
+      </div>
+    </main>
+
+    <script>
+      const logWrapperEl = document.querySelector(".log-wrapper");
+      const btnEl = document.querySelector(".btn-submit");
+      const inputEl = document.querySelector("textarea.input");
+
+      const genId = () => Math.random().toString(16).slice(2);
+
+      class Logs {
+        _logs = [];
+
+        push(content, type) {
+          const log = { id: genId(), content, type };
+          this._logs.push(log);
+          this._insertDom(log);
+          return log;
+        }
+
+        _insertDom(log) {
+          const logEl = document.createElement("article");
+          logEl.id = `log${log.id}`;
+          if (typeof log.content === "string") {
+            logEl.textContent = log.content;
+          } else {
+            logEl.innerHTML = log.content;
+          }
+          logEl.classList.add("log", `log-${log.type}`);
+
+          logWrapperEl.append(logEl);
+          logWrapperEl.scrollTo(0, logWrapperEl.scrollHeight);
+        }
+
+        updateDom(id, cb) {
+          const el = logWrapperEl.querySelector(`#log${id}`);
+          cb(el);
+          logWrapperEl.scrollTo(0, logWrapperEl.scrollHeight);
+        }
+      }
+
+      const logs = new Logs();
+
+      ["input", "paste", "keyup"].forEach((event) => {
+        inputEl.addEventListener(event, (e) => {
+          e.target.value = e.target.value.replace(/[\r\n\v]+/g, "");
+        });
+      });
+
+      btnEl.addEventListener("click", async () => {
+        try {
+          inputEl.disabled = true;
+          btnEl.disabled = true;
+
+          let text = inputEl.value;
+
+          logs.push(text, "request");
+          const resLog = logs.push("please wait...", "response");
+
+          const res = await fetch("/api/tts", {
+            method: "POST",
+            body: JSON.stringify({ text }),
+            headers: {
+              "content-type": "application/json",
+            },
+          });
+
+          if (!res.ok) {
+            let body = await res.text();
+            alert("Failed to fetch: " + body);
+            return;
+          }
+
+          const audioBlob = await res.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+
+          logs.updateDom(resLog.id, (logEl) => {
+            logEl.innerHTML = "";
+            const audioEl = document.createElement("audio");
+            audioEl.controls = true;
+            audioEl.src = audioUrl;
+            logEl.append(audioEl);
+          });
+
+          inputEl.value = "";
+        } catch (e) {
+          console.error(e);
+        } finally {
+          inputEl.disabled = false;
+          btnEl.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
